@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard de Chamados - Grupo Koch</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f4f6f9;color:#1a1a1a;font-family:'Segoe UI',Arial,sans-serif;line-height:1.5;padding:24px 28px}
+.header{text-align:center;margin-bottom:24px;padding-bottom:18px;border-bottom:3px solid #1B2A5C}
+.header h1{font-size:24px;text-transform:uppercase;letter-spacing:3px;font-weight:700;color:#1B2A5C;margin-bottom:6px}
+.abas-meses{display:flex;gap:8px;margin-bottom:16px;justify-content:center;flex-wrap:wrap}
+.aba-mes{background:#fff;border:1px solid #D6DBE3;color:#1B2A5C;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.aba-mes.ativa{background:#1B2A5C;color:#fff;border-color:#1B2A5C}
+.abas{display:flex;gap:4px;margin-bottom:22px;flex-wrap:wrap;border-bottom:2px solid #E5E8EE;position:relative;z-index:1000}
+.aba{background:transparent;border:none;border-bottom:3px solid transparent;color:#64748b;padding:12px 18px;font-size:12px;font-weight:700;text-transform:uppercase;cursor:pointer;font-family:inherit;position:relative;z-index:1001;transition:all .15s}
+.aba:hover{color:#1B2A5C;background:#F8FAFC}
+.aba.ativa{color:#1B2A5C;border-bottom-color:#1B2A5C;font-weight:800}
+.aba-pcm.ativa{color:#7c3aed;border-bottom-color:#7c3aed}
+.aba-extra.ativa{color:#f97316;border-bottom-color:#f97316}
+.filtro-data{background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(27,42,92,.06);border:1px solid #E8EBF0;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+.filtro-data label{font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b}
+.filtro-data input{padding:8px 12px;border:1.5px solid #D6DBE3;border-radius:8px;font-family:inherit;font-size:13px;color:#1B2A5C}
+.filtro-data button{background:#1B2A5C;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;font-family:inherit}
+.filtro-data button.limpar{background:#fff;color:#1B2A5C;border:1.5px solid #D6DBE3}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:3px;font-weight:700;color:#1B2A5C;margin:24px 0 16px;padding-bottom:10px;border-bottom:1px solid #E5E8EE;display:flex;justify-content:space-between}
+.section-title .tag{color:#94a3b8;font-size:10px;font-weight:700}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(27,42,92,.06);border:1px solid #E8EBF0;border-left:4px solid #1B2A5C}
+.kpi-card.verde{border-left-color:#16A34A}
+.kpi-card.amarelo{border-left-color:#EAB308}
+.kpi-card.vermelho{border-left-color:#D9182D}
+.kpi-card.azul{border-left-color:#3b82f6}
+.kpi-card.laranja{border-left-color:#f97316}
+.kpi-card.roxo{border-left-color:#7c3aed}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:700;margin-bottom:6px}
+.kpi-valor{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1}
+.painel-titulo{font-size:13px;font-weight:800;text-transform:uppercase;padding:10px 14px;border-radius:8px;margin-bottom:10px}
+.painel-titulo.geral{background:#1B2A5C;color:#fff}
+.painel-titulo.corretiva{background:#c2410c;color:#fff}
+.painel-titulo.preventiva{background:#6d28d9;color:#fff}
+.painel-bloco{background:#F8FAFC;padding:16px;border-radius:12px;margin-bottom:20px;border:1px solid #E8EBF0}
+.grafico-card{background:#fff;border-radius:14px;padding:24px;margin-bottom:22px;border:1px solid #E8EBF0;overflow:hidden;}
+.grafico-titulo{font-size:13px;font-weight:700;color:#1B2A5C;margin-bottom:18px;text-transform:uppercase}
+.canvas-container{position:relative; width:100%; height:400px;}
+canvas{display:block; width:100%; height:100%;}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px}
+.cat-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #E8EBF0;border-top:4px solid #1B2A5C;cursor:pointer;transition:all .18s}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(27,42,92,.13)}
+.cat-card.verde{border-top-color:#16A34A}
+.cat-card.amarelo{border-top-color:#EAB308}
+.cat-card.vermelho{border-top-color:#D9182D}
+.cat-nome{font-size:15px;font-weight:800;color:#1B2A5C;text-transform:uppercase;margin-bottom:14px}
+.cat-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0F3F8}
+.cat-info{text-align:center}
+.cat-info-label{font-size:9px;color:#94a3b8;text-transform:uppercase;font-weight:700}
+.cat-info-valor{font-size:20px;font-weight:800;color:#1a1a1a}
+.cat-progresso{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase}
+.badge{font-size:13px;font-weight:800;padding:5px 14px;border-radius:20px}
+.badge.verde{background:#E8F8EF;color:#16A34A}
+.badge.amarelo{background:#FEF7E0;color:#A16207}
+.badge.vermelho{background:#FEF0F0;color:#D9182D}
+.tabela{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:18px;background:#fff;border-radius:10px;overflow:hidden}
+.tabela thead{background:#1B2A5C;color:#fff}
+.tabela th{padding:11px 14px;text-align:left;font-size:10px;text-transform:uppercase;font-weight:700}
+.tabela td{padding:10px 14px;border-bottom:1px solid #F0F3F8}
+.tabela tr:hover td{background:#F8FAFC}
+.tabela .rank{font-weight:800;color:#1B2A5C}
+.tabela .rank.ouro{color:#CA8A04}
+.tabela .rank.prata{color:#64748b}
+.tabela .rank.bronze{color:#b45309}
+.tabela .num{text-align:center;font-weight:700}
+.tabela .taxa{text-align:center}
+.tabela .taxa span{padding:3px 10px;border-radius:12px;font-weight:800}
+.tabela .taxa span.verde{background:#E8F8EF;color:#16A34A}
+.tabela .taxa span.amarelo{background:#FEF7E0;color:#A16207}
+.tabela .taxa span.vermelho{background:#FEF0F0;color:#D9182D}
+.tabela .nome-clicavel{color:#1B2A5C;font-weight:700;cursor:pointer;text-decoration:underline}
+.btn-voltar{background:#fff;color:#1B2A5C;border:1.5px solid #D6DBE3;padding:8px 18px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-bottom:18px;font-family:inherit}
+.btn-voltar:hover{background:#1B2A5C;color:#fff}
+.detalhe-titulo{font-size:22px;font-weight:800;color:#1B2A5C;text-transform:uppercase;margin-bottom:20px}
+.bloco-lojas{background:#F8FAFC;border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid #E8EBF0}
+.bloco-titulo{font-size:10px;font-weight:800;color:#1B2A5C;margin-bottom:10px;border-bottom:1px solid #E2E8F0;padding-bottom:6px;text-transform:uppercase}
+.loja-tag{display:inline-block;background:#F1F5F9;color:#1B2A5C;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;margin:2px;border:1px solid #E2E8F0}
+.loja-tag.aberto{background:#FEF0F0;color:#D9182D}
+.resultado-card{background:#fff;border-radius:14px;padding:22px;border:1px solid #E8EBF0;border-top:5px solid #1B2A5C;margin-bottom:22px;box-shadow:0 4px 14px rgba(27,42,92,.08)}
+.resultado-card.verde{border-top-color:#16A34A}
+.resultado-card.amarelo{border-top-color:#EAB308}
+.resultado-card.vermelho{border-top-color:#D9182D}
+.resultado-titulo{font-size:18px;font-weight:800;color:#1B2A5C;text-transform:uppercase;margin-bottom:6px}
+.resultado-sub{font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:700;margin-bottom:16px}
+.loading{text-align:center;padding:60px;color:#94a3b8}
+.erro{background:#FEF0F0;border:2px solid #D9182D;color:#D9182D;padding:16px;border-radius:10px;margin:20px auto;max-width:900px;text-align:center;font-weight:700}
+.rodape{text-align:center;margin-top:44px;padding-top:20px;border-top:1px solid #E5E8EE;color:#94a3b8;font-size:10px;text-transform:uppercase}
+@media (max-width:1000px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.cat-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="eyebrow">GRUPO KOCH</div>
+  <h1>Dashboard de Chamados</h1>
+</div>
+<div id="conteudo">
+  <div class="loading">Carregando...</div>
+</div>
+<div class="rodape">Grupo Koch &bull; Dashboard de Chamados</div>
+<script>
+function normalizar(txt) {
+  return String(txt || "").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+
+const SUBGERENTES = {
+  "RAONI":    { regional: "DIEGO",    lojas: ["26","28","35","39","42","45","50","51","59","64","65","71","76","77","92","94","103","104","107","111"] },
+  "MARCOS":   { regional: "CICERO",   lojas: ["5","22","25","30","32","33","34","36","40","43","46","49","63","72","74","80","89","100","106","110"] },
+  "URIEL":    { regional: "JEFFERSON",lojas: ["3","8","11","12","16","17","20","21","23","27","38","44","48","55","81","87","101","102"] },
+  "JAMISSON": { regional: "ADEMIR",   lojas: ["4","6","7","9","14","15","18","31","37","41","52","69","82","95","99","CD"] },
+  "JUVERLEI": { regional: "LEANDRO",  lojas: ["1","2","10","13","24","29","53","56","68","73","78","83","88","90","91","96","105","800","889","CD 2"] },
+  "CRISTIANO":{ regional: "EVERTON",  lojas: ["47","54","57","58","60","61","62","66","67","70","75","79","84","85","86","93","112"] }
+};
+
+const LOJA_PARA_SUBGERENTE = {};
+Object.entries(SUBGERENTES).forEach(([sub, info]) => {
+  info.lojas.forEach(loja => {
+    const norm = String(loja).toUpperCase().trim().replace(/^LOJA\s+/, "");
+    const chave = /^\d+$/.test(norm) ? String(parseInt(norm, 10)) : norm;
+    if (!LOJA_PARA_SUBGERENTE[chave]) LOJA_PARA_SUBGERENTE[chave] = [];
+    if (!LOJA_PARA_SUBGERENTE[chave].includes(sub)) LOJA_PARA_SUBGERENTE[chave].push(sub);
+  });
+});
+
+const MAPA_CATEGORIAS = [
+  { match: "PCM", cat: "PCM", pcm: true }, { match: "MATHEUS PCM", cat: "PCM", pcm: true }, { match: "GABRIELA PCM", cat: "PCM", pcm: true }, { match: "AMANDA PCM", cat: "PCM", pcm: true }, { match: "LUAN PCM", cat: "PCM", pcm: true }, { match: "ANNE PCM", cat: "PCM", pcm: true }, { match: "ROBERTA BONOTTO", cat: "PCM", pcm: true },
+  { match: "EXTRAS", cat: "Extras", extra: true },
+  { match: "SAS EMPILHADEIRAS", cat: "Empilhadeiras" }, { match: "TRANSPOTECH", cat: "Empilhadeiras" },
+  { match: "CRISTIANO PALETEIRAS", cat: "Paleteiras" },
+  { match: "RDL CARRINHOS", cat: "Carrinhos" }, { match: "CRISTIANO COLETA", cat: "Carrinhos" }, { match: "JOEL SOARES COLETA", cat: "Carrinhos" }, { match: "JOSÉ RENATO COLETA", cat: "Carrinhos" }, { match: "JOSE RENATO COLETA", cat: "Carrinhos" }, { match: "LENO COLETA", cat: "Carrinhos" }, { match: "OSVALDO COLETA", cat: "Carrinhos" }, { match: "INOVE TRANSPORTES", cat: "Carrinhos" }, { match: "GLAUCO", cat: "Carrinhos" },
+  { match: "RENOFLEX", cat: "Mobiliário" }, { match: "LUCIANO CADEIRAS", cat: "Mobiliário" },
+  { match: "MANTEC", cat: "Padaria" }, { match: "COLDSERV", cat: "Câmaras" },
+  { match: "LUCFRIO CLIMATIZAÇÃO BARRA VELHA", cat: "Climatização" }, { match: "LUCFRIO CLIMATIZAÇÃO JOINVILLE", cat: "Climatização" }, { match: "CLIMATEC CLIMATIZAÇÃO ITAPEMA", cat: "Climatização" }, { match: "CLIMATEC CLIMATIZAÇÃO TIJUCAS", cat: "Climatização" }, { match: "GILBERTO CLIMATIZAÇÃO BLUMENAU", cat: "Climatização" }, { match: "ABMAEL CLIMATIZAÇÃO", cat: "Climatização" },
+  { match: "WOLF REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "ELOS TECH REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "MACFRIO REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "ADEMIR REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "DANIEL ELETROMUNDO REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "DIEGO ELETROMUNDO REFRIGERAÇÃO", cat: "Refrigeração" }, { match: "RF ROBSOM REFRIGERAÇÃO 1", cat: "Refrigeração" }, { match: "RF ROBSOM REFRIGERAÇÃO 2", cat: "Refrigeração" }, { match: "ROBSOM PREVENTIVAS", cat: "Refrigeração" }, { match: "JHONATHAN BITTENCOURT", cat: "Refrigeração" }, { match: "RAFAEL BITTENCOURT", cat: "Refrigeração" },
+  { match: "LUCIANO ELETROMUNDO", cat: "Elétrica" }, { match: "ADEMIR ELÉTRICA", cat: "Elétrica" }, { match: "MARCOS ELETROMUNDO", cat: "Elétrica" }, { match: "DIEGO ELETROMUNDO", cat: "Elétrica" }, { match: "FILIPE ELETROMUNDO", cat: "Elétrica" }, { match: "NSC ELÉTRICA", cat: "Elétrica" }, { match: "NSC EL", cat: "Elétrica" }, { match: "RUDINEI NOBREAKS", cat: "Elétrica" }, { match: "TIJUELETRO", cat: "Elétrica" },
+  { match: "ALEMÃO CALHAS", cat: "Telhados" }, { match: "ISRAEL JARDIM", cat: "Jardim" }, { match: "JASMIM JARDINAGEM", cat: "Jardim" }, { match: "JOEL GERADORES", cat: "Geradores" }, { match: "LUCIANO GERADORES", cat: "Geradores" },
+  { match: "DOLIRIO PREDIAL", cat: "Predial" }, { match: "MARCIO PREDIAL", cat: "Predial" }, { match: "VALDIR LIMA PREDIAL", cat: "Predial" }, { match: "RODRIGO PREDIAL", cat: "Predial" }, { match: "DJA PREDIAL", cat: "Predial" }, { match: "LEONARDO PREDIAL", cat: "Predial" }, { match: "AMARAL PREDIAL", cat: "Predial" }, { match: "RENATO LIMA PREDIAL", cat: "Predial" },
+  { match: "GS SERRALHERIA", cat: "Serralheria" }, { match: "DM SERRALHERIA", cat: "Serralheria" }, { match: "DOLIRIO SERRALHERIA", cat: "Serralheria" }
+];
+
+function normalizarLoja(loja) {
+  if (!loja) return "";
+  let l = String(loja).toUpperCase().trim().replace(/^LOJA\s+/, "");
+  if (/^\d+$/.test(l)) l = String(parseInt(l, 10));
+  if (l === "CD" || l === "CD 1" || l === "CD1") l = "CD";
+  if (l === "CD 2" || l === "CD2") l = "CD 2";
+  if (l.includes("CP 800") || l === "800") l = "800";
+  if (l.includes("889")) l = "889";
+  if (l.includes("NAO IDENTIFICADO") || l.includes("NÃO IDENTIFICADO")) l = "107";
+  return l;
+}
+
+const ATENDENTES_SUBGERENTES = [
+  "RAONI SUBGERENTE MANUTENÇÃO",
+  "URIEL SUB GERENTE MANUTENÇÃO",
+  "CRISTIANO SUBGERENTE ITAJAÍ MANUTENÇÃO"
+];
+
+const ATENDENTES_REGIONAIS = [
+  "LEANDRO REGIONAL MANUTENÇÃO",
+  "ADEMIR REGIONAL MANUTENÇÃO",
+  "DIEGO REGIONAL MANUTENÇÃO",
+  "EVERTON REGIONAL MANUTENÇÃO",
+  "CICERO REGIONAL MANUTENÇÃO",
+  "JEFFERSON REGIONAL MANUTENÇÃO"
+];
+
+function ehRegionalAtendente(nome) {
+  const n = normalizar(nome);
+  return ATENDENTES_REGIONAIS.includes(n);
+}
+
+function ehSubgerenteAtendente(nome) {
+  const n = normalizar(nome);
+  return ATENDENTES_SUBGERENTES.includes(n);
+}
+
+function classificarAtendente(nome) {
+  if (!nome) return { cat: "Outros", pcm: false, extra: false };
+  const n = normalizar(nome);
+
+  if (ehSubgerenteAtendente(nome)) return { cat: "Subgerentes", pcm: false, extra: false };
+  if (ehRegionalAtendente(nome)) return { cat: "Regionais", pcm: false, extra: false };
+
+  for (const regra of MAPA_CATEGORIAS) {
+    if (n.includes(normalizar(regra.match))) {
+      return { cat: regra.cat, pcm: !!regra.pcm, extra: !!regra.extra };
+    }
+  }
+  return { cat: "Outros", pcm: false, extra: false };
+}
+
+function classificarStatus(s) {
+  if (!s) return "aberto";
+  const x = String(s).toLowerCase();
+  if (x === "encerrado" || x.includes("decurso") || x.includes("fechado pelo")) return "fechado";
+  return "aberto";
+}
+
+function classificarTipo(t) {
+  if (!t) return "corretiva";
+  return normalizar(t).startsWith("PREVENTIVO") ? "preventiva" : "corretiva";
+}
+
+function dataParaISO(s) {
+  if (!s) return "";
+  const limpo = String(s).replace(/[^\d\/]/g, '').trim();
+  const p = limpo.split("/");
+  if (p.length !== 3 || p[2].length < 4) return "";
+  return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+}
+
+function calcularTaxa(t, f) { return t === 0 ? 0 : Math.round((f / t) * 100); }
+function corTaxa(t) { return t >= 85 ? "verde" : (t >= 60 ? "amarelo" : "vermelho"); }
+function medalha(p) { return p === 1 ? "1º" : p === 2 ? "2º" : p === 3 ? "3º" : p + "º"; }
+
+function parseCSV(texto) {
+  if (texto.charCodeAt(0) === 0xFEFF) texto = texto.slice(1);
+  const linhas = [];
+  let campo = "";
+  let linha = [];
+  let dentroAspas = false;
+
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (c === '"') {
+      if (dentroAspas && texto[i + 1] === '"') { campo += '"'; i++; }
+      else { dentroAspas = !dentroAspas; }
+    } else if (c === ',' && !dentroAspas) {
+      linha.push(campo.trim()); campo = "";
+    } else if ((c === '\n' || c === '\r') && !dentroAspas) {
+      if (c === '\r' && texto[i + 1] === '\n') i++;
+      linha.push(campo.trim());
+      if (linha.length > 1 || linha[0] !== "") linhas.push(linha);
+      linha = []; campo = "";
+    } else { campo += c; }
+  }
+  if (campo !== "" || linha.length > 0) { linha.push(campo.trim()); linhas.push(linha); }
+  return linhas;
+}
+
+let TODOS_CHAMADOS = [];
+let CHAMADOS_FILTRADOS = [];
+let MESES = [];
+let MES_ATUAL = "";
+let ABA_ATUAL = "inicio";
+let ULTIMA_ABA_LISTA = "inicio";
+
+function obterMesPorData(dataISO) {
+  if (!dataISO) return null;
+  const p = dataISO.split("-");
+  if (p.length < 2) return null;
+  const ano = p[0];
+  const mesNum = parseInt(p[1], 10);
+  if (isNaN(mesNum) || mesNum < 1 || mesNum > 12) return null;
+  const meses = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+  const mesString = meses[mesNum - 1] + "/" + ano.slice(-2);
+  if (mesString === "SET/26" || mesString === "OUT/26") return mesString;
+  return null;
+}
+
+const ABAS = [
+  { id: "inicio",      label: "Início" },
+  { id: "subgerentes", label: "Subgerentes" },
+  { id: "regionais",   label: "Regionais" },
+  { id: "categorias",  label: "Categorias" },
+  { id: "pcm",         label: "PCM", cls: "aba-pcm" },
+  { id: "extras",      label: "Extras", cls: "aba-extra" },
+  { id: "outros",      label: "Outros" }
+];
+// ============================================================
+// MOTOR DE GRÁFICOS EM CANVAS PURO (COM PADRONIZAÇÃO TOTAL)
+// ============================================================
+function desenharGraficoCanvas(id, labels, datasets, isEvolucao = false, isSingleBarWithColors = false, isGeralHome = false) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  const padding = { top: 30, right: 20, bottom: 60, left: 50 };
+  const chartW = w - padding.left - padding.right;
+  const chartH = h - padding.top - padding.bottom;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // TRAVA DE SEGURANÇA: Teto mínimo de 5 para não quebrar se for tudo zero
+  let maxVal = 5;
+  datasets.forEach(ds => { maxVal = Math.max(maxVal, ...ds.data); });
+  
+  const step = Math.ceil(maxVal / 5);
+  const maxEscala = step * 5;
+
+  // Eixo Y
+  ctx.beginPath();
+  ctx.strokeStyle = "#E2E8F0";
+  ctx.lineWidth = 1;
+  ctx.font = "11px 'Segoe UI', Arial";
+  ctx.fillStyle = "#94a3b8";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+
+  for (let i = 0; i <= 5; i++) {
+    const val = step * i;
+    const y = padding.top + chartH - (chartH * (val / maxEscala));
+    ctx.moveTo(padding.left, y);
+    ctx.lineTo(w - padding.right, y);
+    ctx.fillText(val, padding.left - 8, y);
+  }
+  ctx.stroke();
+
+  const numGroups = labels.length;
+  const numDatasets = datasets.length;
+  const groupSpace = chartW / numGroups;
+  
+  const C_AZUL = "#1B2A5C";
+  const C_VERDE = "#16A34A";
+  const C_LARANJA = "#f97316";
+
+  const isMetricas = (labels.length === 3 && labels[0] === "Total" && labels[1] === "Fechados");
+  
+  const barWidth = isEvolucao 
+    ? Math.min(35, (groupSpace / numDatasets) * 0.7) 
+    : Math.min(60, groupSpace * 0.4);
+
+  // Desenha as Barras
+  labels.forEach((label, i) => {
+    const groupCenter = padding.left + (groupSpace * i) + (groupSpace / 2);
+    
+    if (isGeralHome) {
+      // MODO GERAL (HOME, CATEGORIAS, ETC): 1 único grupo com as 3 barras coloridas juntas
+      const bw = 60;
+      for (let j = 0; j < 3; j++) {
+        const val = datasets[0].data[j] || 0;
+        const barH = chartH * (val / maxEscala);
+        const y = padding.top + chartH - barH;
+        
+        const totalBarsW = 3 * bw;
+        const x = groupCenter - (totalBarsW / 2) + (j * bw);
+        
+        ctx.fillStyle = j === 0 ? C_AZUL : j === 1 ? C_VERDE : C_LARANJA;
+        ctx.beginPath();
+        ctx.roundRect(x, y, bw, barH, [4, 4, 0, 0]);
+        ctx.fill();
+
+        if (val > 0) {
+          ctx.fillStyle = "#1a1a1a";
+          ctx.font = "bold 11px 'Segoe UI', Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(val, x + bw / 2, y - 4);
+        }
+      }
+    } else if (isMetricas && isSingleBarWithColors) {
+      // MODO CORRETIVA/PREVENTIVA: 3 grupos separados, 1 barra por grupo
+      const val = datasets[0].data[i] || 0;
+      const barH = chartH * (val / maxEscala);
+      const y = padding.top + chartH - barH;
+      const x = groupCenter - (barWidth / 2);
+
+      ctx.fillStyle = i === 0 ? C_AZUL : i === 1 ? C_VERDE : C_LARANJA;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barWidth, barH, [4, 4, 0, 0]);
+      ctx.fill();
+
+      if (val > 0) {
+        ctx.fillStyle = "#1a1a1a";
+        ctx.font = "bold 11px 'Segoe UI', Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(val, x + barWidth / 2, y - 4);
+      }
+    } else {
+      // MODO EVOLUÇÃO: 3 barras coloridas por mês
+      datasets.forEach((ds, j) => {
+        const val = ds.data[i] || 0;
+        const barH = chartH * (val / maxEscala);
+        const y = padding.top + chartH - barH;
+        
+        let x;
+        if (isEvolucao) {
+          const totalBarsW = numDatasets * barWidth;
+          x = groupCenter - (totalBarsW / 2) + (j * barWidth);
+        } else {
+          x = groupCenter - (barWidth / 2);
+        }
+
+        ctx.fillStyle = j === 0 ? C_AZUL : j === 1 ? C_VERDE : (j === 2 ? C_LARANJA : (ds.cor || C_AZUL));
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barH, [4, 4, 0, 0]);
+        ctx.fill();
+
+        if (val > 0) {
+          ctx.fillStyle = "#1a1a1a";
+          ctx.font = "bold 11px 'Segoe UI', Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(val, x + barWidth / 2, y - 4);
+        }
+      });
+    }
+
+    // Label embaixo
+    if (!isGeralHome && label) {
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 11px 'Segoe UI', Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText(label, groupCenter, padding.top + chartH + 12);
+    }
+  });
+
+  // Legenda
+  if (isMetricas || isEvolucao || isGeralHome) {
+    const legendLabels = ["Total", "Fechados", "Em Atendimento"];
+    const legendColors = [C_AZUL, C_VERDE, C_LARANJA];
+    const legendY = h - 20;
+    
+    const itemW = 120; 
+    const totalLegW = 3 * itemW;
+    let startX = (w - totalLegW) / 2 + 15;
+
+    for (let k = 0; k < 3; k++) {
+      ctx.fillStyle = legendColors[k];
+      ctx.beginPath();
+      ctx.roundRect(startX, legendY - 4, 10, 10, 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#1a1a1a";
+      ctx.font = "bold 12px 'Segoe UI', Arial";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(legendLabels[k], startX + 15, legendY + 1);
+
+      startX += itemW;
+    }
+  }
+}
+
+// Polyfill para roundRect
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
+function desenharGraficos(prefixoId, gTotal, gFech, gAbert, cTotal, cFech, cAbert, pTotal, pFech, pAbert) {
+  desenharGraficoCanvas(prefixoId + "-geral", ["Geral"], [
+    { data: [gTotal, gFech, gAbert] }
+  ], false, false, true); 
+  
+  desenharGraficoCanvas(prefixoId + "-corretiva", ["Total", "Fechados", "Em Atendimento"], [
+    { data: [cTotal, cFech, cAbert] }
+  ], false, true);
+  
+  desenharGraficoCanvas(prefixoId + "-preventiva", ["Total", "Fechados", "Em Atendimento"], [
+    { data: [pTotal, pFech, pAbert] }
+  ], false, true);
+}
+
+// ============================================================
+// RENDERIZAÇÃO DAS ABAS
+// ============================================================
+function renderizarAbas() {
+  const div = document.getElementById("conteudo");
+
+  if (MESES.length > 0) {
+    const abasMeses = document.createElement("div");
+    abasMeses.className = "abas-meses";
+
+    if (MESES.length > 1) {
+      const btnEvolucao = document.createElement("button");
+      btnEvolucao.className = "aba-mes" + (MES_ATUAL === "EVOLUCAO" ? " ativa" : "");
+      btnEvolucao.textContent = "Evolução";
+      btnEvolucao.onclick = () => selecionarMes("EVOLUCAO", btnEvolucao);
+      abasMeses.appendChild(btnEvolucao);
+    }
+
+    MESES.forEach(m => {
+      const b = document.createElement("button");
+      b.className = "aba-mes" + (m === MES_ATUAL ? " ativa" : "");
+      b.textContent = m;
+      b.onclick = () => selecionarMes(m, b);
+      abasMeses.appendChild(b);
+    });
+    div.appendChild(abasMeses);
+  }
+
+  const abas = document.createElement("div");
+  abas.id = "abas-container";
+  abas.className = "abas";
+  ABAS.forEach(a => {
+    const b = document.createElement("button");
+    b.className = "aba" + (a.cls ? " " + a.cls : "");
+    if (a.id === ABA_ATUAL) b.classList.add("ativa");
+    b.textContent = a.label;
+    b.onclick = function() { trocarAba(a.id); };
+    abas.appendChild(b);
+  });
+  div.appendChild(abas);
+}
+
+function selecionarMes(mes, botaoClicado) {
+  MES_ATUAL = mes;
+  CHAMADOS_FILTRADOS = mes === "EVOLUCAO" ? TODOS_CHAMADOS.slice() : TODOS_CHAMADOS.filter(c => c.mes === mes);
+
+  document.querySelectorAll(".aba-mes").forEach(x => x.classList.remove("ativa"));
+  if (botaoClicado) botaoClicado.classList.add("ativa");
+
+  limparConteudoExcetoAbas();
+
+  if (ABA_ATUAL === "inicio") renderizarHome();
+  else trocarAba(ABA_ATUAL);
+}
+
+function limparConteudoExcetoAbas() {
+  const cont = document.getElementById("conteudo");
+  Array.from(cont.children).forEach(el => {
+    if (el.id === "abas-container") return;
+    if (el.classList && el.classList.contains("abas-meses")) return;
+    el.remove();
+  });
+}
+
+function trocarAba(abaId) {
+  ABA_ATUAL = abaId;
+  ULTIMA_ABA_LISTA = abaId;
+  limparConteudoExcetoAbas();
+
+  document.querySelectorAll("#abas-container .aba").forEach(b => {
+    const labelAlvo = (ABAS.find(x => x.id === abaId)?.label || "").toUpperCase();
+    b.classList.toggle("ativa", b.textContent.trim().toUpperCase() === labelAlvo);
+  });
+
+  if (abaId === "inicio") renderizarHome();
+  else if (abaId === "subgerentes") {
+    const dadosSub = Object.keys(SUBGERENTES).map(subNome => {
+      const lojasDaRegiao = SUBGERENTES[subNome].lojas.map(l => normalizarLoja(l));
+      const chamados = CHAMADOS_FILTRADOS.filter(c => lojasDaRegiao.includes(c.lojaNorm));
+      const total = chamados.length;
+      const fechados = chamados.filter(c => c.statusCls === "fechado").length;
+      return { nome: subNome, total, fechados, abertos: total - fechados, taxa: calcularTaxa(total, fechados) };
+    });
+    renderizarListaGenerica("Subgerentes", dadosSub.filter(d => d.total > 0), "subg");
+  }
+  else if (abaId === "regionais") {
+    const dadosRegionais = ATENDENTES_REGIONAIS.map(nome => {
+      const chamados = CHAMADOS_FILTRADOS.filter(c => normalizar(c.atendente) === normalizar(nome));
+      const total = chamados.length;
+      const fechados = chamados.filter(c => c.statusCls === "fechado").length;
+      return { nome, total, fechados, abertos: total - fechados, taxa: calcularTaxa(total, fechados) };
+    });
+    renderizarListaGenerica("Regionais", dadosRegionais.filter(d => d.total > 0), "prest");
+  }
+  else if (abaId === "categorias") renderizarGridCategorias();
+  else if (abaId === "pcm") renderizarDetalheGenerico("PCM", CHAMADOS_FILTRADOS.filter(c => c.pcm), true);
+  else if (abaId === "extras") renderizarDetalheGenerico("Extras", CHAMADOS_FILTRADOS.filter(c => c.extra || c.categoria === "Extras"), true);
+  else if (abaId === "outros") renderizarDetalheGenerico("Outros", CHAMADOS_FILTRADOS.filter(c => c.categoria === "Outros"), true);
+}
+
+function agruparPor(chamados, chaveFn) {
+  const map = new Map();
+  chamados.forEach(c => {
+    const k = chaveFn(c); if (!k) return;
+    if (!map.has(k)) map.set(k, { total: 0, fechados: 0, abertos: 0 });
+    const g = map.get(k); g.total++; if (c.statusCls === "fechado") g.fechados++; else g.abertos++;
+  });
+  return Array.from(map.entries()).map(([nome, d]) => ({ nome, ...d, taxa: calcularTaxa(d.total, d.fechados) }));
+}
+
+function buscarPrestador(termo) {
+  const t = normalizar(termo);
+  if (!t) return [];
+  const mapa = new Map();
+  CHAMADOS_FILTRADOS.forEach(c => {
+    if (normalizar(c.atendente).includes(t)) {
+      if (!mapa.has(c.atendente)) mapa.set(c.atendente, []);
+      mapa.get(c.atendente).push(c);
+    }
+  });
+  return Array.from(mapa.entries()).map(([nome, lista]) => {
+    const total = lista.length;
+    const fechados = lista.filter(x => x.statusCls === "fechado").length;
+    return { nome, total, fechados, abertos: total - fechados, taxa: calcularTaxa(total, fechados), lista };
+  }).sort((a, b) => b.total - a.total);
+}
+// ============================================================
+// CARREGAMENTO DE MÚLTIPLOS CSVs
+// ============================================================
+function carregarDados() {
+  const container = document.getElementById("conteudo");
+  container.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.style.cssText = "background:#fff;border-radius:14px;padding:40px;box-shadow:0 4px 16px rgba(27,42,92,.08);border:1px solid #E8EBF0;text-align:center;max-width:640px;margin:40px auto;";
+
+  const t1 = document.createElement("div");
+  t1.style.cssText = "font-size:20px;font-weight:800;color:#1B2A5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;";
+  t1.textContent = "Selecione o(s) arquivo(s) CSV";
+
+  const t2 = document.createElement("div");
+  t2.style.cssText = "font-size:13px;color:#64748b;margin-bottom:24px;line-height:1.6;";
+  t2.innerHTML = 'Escolha um ou mais arquivos <strong>chamados.csv</strong> (ex: Setembro e Outubro).';
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.id = "input-csv";
+  input.accept = ".csv";
+  input.multiple = true;
+  input.style.display = "none";
+
+  const btn = document.createElement("button");
+  btn.id = "btn-escolher";
+  btn.style.cssText = "background:#1B2A5C;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-size:13px;font-weight:700;text-transform:uppercase;cursor:pointer;font-family:inherit;";
+  btn.textContent = "Escolher arquivo(s) CSV";
+
+  card.appendChild(t1);
+  card.appendChild(t2);
+  card.appendChild(input);
+  card.appendChild(btn);
+  container.appendChild(card);
+
+  btn.onclick = () => input.click();
+
+  input.onchange = async (e) => {
+    const arquivos = Array.from(e.target.files);
+    if (arquivos.length === 0) return;
+
+    let todosTextos = [];
+
+    for (const arquivo of arquivos) {
+      const texto = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = (ev) => reject(new Error("Erro ao ler: " + arquivo.name));
+        reader.readAsText(arquivo, "UTF-8");
+      });
+      todosTextos.push({ nomeArquivo: arquivo.name, texto: texto });
+    }
+
+    try {
+      processarCSVs(todosTextos);
+    } catch (err) {
+      const c = document.getElementById("conteudo");
+      c.innerHTML = "";
+      const errDiv = document.createElement("div");
+      errDiv.className = "erro";
+      errDiv.textContent = "Erro: " + err.message;
+      c.appendChild(errDiv);
+    }
+    e.target.value = "";
+  };
+}
+
+function processarCSVs(arquivosTextos) {
+  TODOS_CHAMADOS = [];
+  let mesesSet = new Set();
+
+  arquivosTextos.forEach(({nomeArquivo, texto}) => {
+    const linhas = parseCSV(texto);
+    if (linhas.length < 2) return;
+
+    const header = linhas[0].map(h => normalizar(h));
+
+    let idxLoja = header.findIndex(h => h === "LOJA" || h === "LOJAS");
+    let idxAtendente = header.findIndex(h => h === "ATENDENTE" || h === "PRESTADOR");
+    let idxDataAbert = header.findIndex(h => h.includes("DATA DE ABERTURA") || h.includes("ABERTURA"));
+    let idxStatus = header.findIndex(h => h === "STATUS" || h === "SITUAÇÃO");
+    let idxTipo = header.findIndex(h => h.includes("TIPO DO CHAMADO") || h === "TIPO");
+    let idxTitulo = header.findIndex(h => h.includes("TITULO") || h.includes("TÍTULO") || h.includes("CHAMADO"));
+    let idxSubg = header.findIndex(h => h === "SUBGERENTE");
+
+    if (idxLoja === -1) idxLoja = 0;
+    if (idxAtendente === -1) idxAtendente = 3;
+    if (idxDataAbert === -1) idxDataAbert = 4;
+    if (idxStatus === -1) idxStatus = 8;
+    if (idxTipo === -1) idxTipo = 2;
+    if (idxTitulo === -1) idxTitulo = 9;
+
+    for (let i = 1; i < linhas.length; i++) {
+      const l = linhas[i];
+      if (!l || l.length < 2) continue;
+
+      const atendente = (l[idxAtendente] || "").trim();
+      if (!atendente) continue;
+
+      const tipoRaw   = (l[idxTipo] || "").trim();
+      const tituloRaw = (l[idxTitulo] || "").trim();
+      const loja      = (l[idxLoja] || "").trim();
+      const lojaNorm  = normalizarLoja(loja);
+
+      const cls = classificarAtendente(atendente);
+      let catDoChamado = cls.cat;
+
+      if (normalizar(tituloRaw).includes("JARDIM") || normalizar(tituloRaw).includes("JARDINAGEM")) {
+        catDoChamado = "Jardim";
+      }
+
+      let ehExtra = cls.extra;
+      if (ehRegionalAtendente(atendente)) ehExtra = false;
+
+      // FILTRO: Oculta subgerentes desconhecidos (Não Identificado, etc)
+      let subg = normalizar((l[idxSubg] || "").trim())
+        || (LOJA_PARA_SUBGERENTE[lojaNorm] ? LOJA_PARA_SUBGERENTE[lojaNorm][0] : "");
+      
+      if (subg && !Object.keys(SUBGERENTES).includes(subg)) {
+        if (LOJA_PARA_SUBGERENTE[lojaNorm]) {
+          subg = LOJA_PARA_SUBGERENTE[lojaNorm][0];
+        } else {
+          subg = "";
+        }
+      }
+
+      const dataAbertISO = dataParaISO(l[idxDataAbert]);
+      const mes = obterMesPorData(dataAbertISO);
+
+      if (!mes) continue;
+      mesesSet.add(mes);
+
+      TODOS_CHAMADOS.push({
+        loja, lojaNorm, subg, atendente,
+        tipo:       classificarTipo(tipoRaw),
+        status:     (l[idxStatus] || "").trim(),
+        statusCls:  classificarStatus(l[idxStatus]),
+        dataAbert:  (l[idxDataAbert] || "").trim(),
+        dataAbertISO: dataAbertISO,
+        categoria:  catDoChamado,
+        pcm:        cls.pcm,
+        extra:      ehExtra,
+        mes:        mes
+      });
+    }
+  });
+
+  MESES = Array.from(mesesSet).sort((a, b) => {
+    const mesesMap = { "JAN": 1, "FEV": 2, "MAR": 3, "ABR": 4, "MAI": 5, "JUN": 6, "JUL": 7, "AGO": 8, "SET": 9, "OUT": 10, "NOV": 11, "DEZ": 12 };
+    const parse = (m) => {
+      const p = m.split("/");
+      return (parseInt(p[1], 10) * 100) + (mesesMap[p[0]] || 0);
+    };
+    return parse(a) - parse(b);
+  });
+
+  MES_ATUAL = MESES.length > 1 ? "EVOLUCAO" : (MESES[0] || "");
+  CHAMADOS_FILTRADOS = TODOS_CHAMADOS.slice();
+
+  const c = document.getElementById("conteudo");
+  c.innerHTML = "";
+  renderizarAbas();
+  renderizarHome();
+}
+
+// ============================================================
+// FILTRO E HOME
+// ============================================================
+function renderizarFiltro() {
+  const wrap = document.createElement("div");
+  wrap.className = "filtro-data";
+  wrap.innerHTML = `
+    <label>Buscar prestador:</label>
+    <input type="text" id="input-busca" placeholder="Nome do prestador...">
+    <button id="btn-buscar">Buscar</button>
+    <button id="btn-limpar" class="limpar">Limpar</button>
+  `;
+  document.getElementById("conteudo").appendChild(wrap);
+
+  document.getElementById("btn-buscar").onclick = () => {
+    const termo = document.getElementById("input-busca").value;
+    let base = MES_ATUAL === "EVOLUCAO" ? TODOS_CHAMADOS : TODOS_CHAMADOS.filter(c => c.mes === MES_ATUAL);
+    CHAMADOS_FILTRADOS = base;
+    limparConteudoExcetoAbas();
+    renderizarHome(termo);
+  };
+  document.getElementById("btn-limpar").onclick = () => {
+    let base = MES_ATUAL === "EVOLUCAO" ? TODOS_CHAMADOS : TODOS_CHAMADOS.filter(c => c.mes === MES_ATUAL);
+    CHAMADOS_FILTRADOS = base;
+    trocarAba("inicio");
+  };
+}
+
+function renderizarHome(buscaTermo = "") {
+  renderizarFiltro();
+  const conteudo = document.getElementById("conteudo");
+
+  if (buscaTermo && buscaTermo.trim() !== "") {
+    const resultados = buscarPrestador(buscaTermo);
+    const wrapRes = document.createElement("div");
+    if (resultados.length === 0) {
+      const semRes = document.createElement("div");
+      semRes.className = "resultado-card";
+      semRes.innerHTML = `<div class="resultado-titulo">Nenhum prestador encontrado</div><div class="resultado-sub">Busca: "${buscaTermo}"</div>`;
+      wrapRes.appendChild(semRes);
+    } else {
+      resultados.forEach(r => {
+        const cls = corTaxa(r.taxa);
+        const card = document.createElement("div");
+        card.className = "resultado-card " + cls;
+
+        const kpis = document.createElement("div");
+        kpis.className = "kpi-grid";
+        const mk = (label, valor, clsCard) => `<div class="kpi-card ${clsCard}"><div class="kpi-label">${label}</div><div class="kpi-valor">${valor}</div></div>`;
+        kpis.innerHTML = mk("Total", r.total, "azul") + mk("Fechados", r.fechados, "verde") + mk("Em Atendimento", r.abertos, "laranja") + mk("Taxa", r.taxa + "%", cls);
+
+        card.innerHTML = `<div class="resultado-titulo">${r.nome}</div><div class="resultado-sub">${classificarAtendente(r.nome).cat} • ${r.total} chamados</div>`;
+        card.appendChild(kpis);
+
+        const btnVer = document.createElement("button");
+        btnVer.className = "btn-voltar";
+        btnVer.style.marginTop = "10px";
+        btnVer.style.marginBottom = "0";
+        btnVer.textContent = "Ver detalhes →";
+        btnVer.onclick = () => {
+          limparConteudoExcetoAbas();
+          renderizarDetalheGenerico(r.nome, r.lista, false);
+        };
+        card.appendChild(btnVer);
+        wrapRes.appendChild(card);
+      });
+    }
+    conteudo.appendChild(wrapRes);
+  }
+
+  if (MES_ATUAL === "EVOLUCAO" && MESES.length > 1) {
+    renderizarEvolucao();
+    return;
+  }
+
+  const k = {
+    total: CHAMADOS_FILTRADOS.length,
+    fechados: CHAMADOS_FILTRADOS.filter(c => c.statusCls === "fechado").length,
+    abertos: CHAMADOS_FILTRADOS.filter(c => c.statusCls === "aberto").length
+  };
+  k.taxa = calcularTaxa(k.total, k.fechados);
+
+  const fPrev = CHAMADOS_FILTRADOS.filter(c => c.tipo === "preventiva");
+  const fCorr = CHAMADOS_FILTRADOS.filter(c => c.tipo === "corretiva");
+  const pFech = fPrev.filter(c => c.statusCls === "fechado").length;
+  const pAbert = fPrev.filter(c => c.statusCls === "aberto").length;
+  const cFech = fCorr.filter(c => c.statusCls === "fechado").length;
+  const cAbert = fCorr.filter(c => c.statusCls === "aberto").length;
+
+  const divPaineis = document.createElement("div");
+  const paineis = [
+    { cls: "geral", titulo: "GERAL", total: k.total, fechados: k.fechados, abertos: k.abertos, taxa: k.taxa },
+    { cls: "corretiva", titulo: "CORRETIVAS", total: fCorr.length, fechados: cFech, abertos: cAbert, taxa: calcularTaxa(fCorr.length, cFech) },
+    { cls: "preventiva", titulo: "PREVENTIVAS", total: fPrev.length, fechados: pFech, abertos: pAbert, taxa: calcularTaxa(fPrev.length, pFech) }
+  ];
+
+  paineis.forEach(p => {
+    const bloco = document.createElement("div");
+    bloco.className = "painel-bloco";
+    bloco.innerHTML = `<div class="painel-titulo ${p.cls}">${p.titulo}</div>
+      <div class="kpi-grid">
+        <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${p.total}</div></div>
+        <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${p.fechados}</div></div>
+        <div class="kpi-card laranja"><div class="kpi-label">Em Atendimento</div><div class="kpi-valor">${p.abertos}</div></div>
+        <div class="kpi-card ${corTaxa(p.taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${p.taxa}%</div></div>
+      </div>`;
+    divPaineis.appendChild(bloco);
+  });
+  conteudo.appendChild(divPaineis);
+
+  const divGraficos = document.createElement("div");
+  divGraficos.className = "graficos-wrap";
+  divGraficos.innerHTML = `
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO GERAL</div><div class="canvas-container"><canvas id="home-geral"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO CORRETIVAS</div><div class="canvas-container"><canvas id="home-corretiva"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO PREVENTIVAS</div><div class="canvas-container"><canvas id="home-preventiva"></canvas></div></div>
+  `;
+  conteudo.appendChild(divGraficos);
+
+  setTimeout(() => {
+    desenharGraficos("home", k.total, k.fechados, k.abertos, fCorr.length, cFech, cAbert, fPrev.length, pFech, pAbert);
+  }, 50);
+}
+// ============================================================
+// TELA DE EVOLUÇÃO
+// ============================================================
+function renderizarEvolucao() {
+  const conteudo = document.getElementById("conteudo");
+
+  const kpisMeses = MESES.map(m => {
+    const filtroMes = TODOS_CHAMADOS.filter(c => c.mes === m);
+    const fCorr = filtroMes.filter(c => c.tipo === "corretiva");
+    const fPrev = filtroMes.filter(c => c.tipo === "preventiva");
+
+    return {
+      mes: m,
+      total: filtroMes.length,
+      fechados: filtroMes.filter(c => c.statusCls === "fechado").length,
+      abertos: filtroMes.filter(c => c.statusCls === "aberto").length,
+      corrTotal: fCorr.length,
+      corrFech: fCorr.filter(c => c.statusCls === "fechado").length,
+      corrAbert: fCorr.filter(c => c.statusCls === "aberto").length,
+      prevTotal: fPrev.length,
+      prevFech: fPrev.filter(c => c.statusCls === "fechado").length,
+      prevAbert: fPrev.filter(c => c.statusCls === "aberto").length,
+      taxa: calcularTaxa(filtroMes.length, filtroMes.filter(c => c.statusCls === "fechado").length)
+    };
+  });
+
+  const divTitulo = document.createElement("div");
+  divTitulo.className = "section-title";
+  divTitulo.innerHTML = `<span>Visão Geral de Evolução</span>`;
+  conteudo.appendChild(divTitulo);
+
+  const divPaineis = document.createElement("div");
+  kpisMeses.forEach(k => {
+    const bloco = document.createElement("div");
+    bloco.className = "painel-bloco";
+    bloco.innerHTML = `<div class="painel-titulo geral">${k.mes}</div>
+      <div class="kpi-grid">
+        <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${k.total}</div></div>
+        <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${k.fechados}</div></div>
+        <div class="kpi-card laranja"><div class="kpi-label">Em Atendimento</div><div class="kpi-valor">${k.abertos}</div></div>
+        <div class="kpi-card ${corTaxa(k.taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${k.taxa}%</div></div>
+      </div>`;
+    divPaineis.appendChild(bloco);
+  });
+  conteudo.appendChild(divPaineis);
+
+  const divGraficos = document.createElement("div");
+  divGraficos.className = "graficos-wrap";
+  divGraficos.innerHTML = `
+    <div class="grafico-card"><div class="grafico-titulo">EVOLUÇÃO GERAL</div><div class="canvas-container"><canvas id="evo-geral"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">EVOLUÇÃO CORRETIVAS</div><div class="canvas-container"><canvas id="evo-corretiva"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">EVOLUÇÃO PREVENTIVAS</div><div class="canvas-container"><canvas id="evo-preventiva"></canvas></div></div>
+  `;
+  conteudo.appendChild(divGraficos);
+
+  setTimeout(() => {
+    const labels = kpisMeses.map(k => k.mes);
+    
+    desenharGraficoCanvas("evo-geral", labels, [
+      { data: kpisMeses.map(k => k.total), cor: "#1B2A5C" },
+      { data: kpisMeses.map(k => k.fechados), cor: "#16A34A" },
+      { data: kpisMeses.map(k => k.abertos), cor: "#f97316" }
+    ], true);
+    
+    desenharGraficoCanvas("evo-corretiva", labels, [
+      { data: kpisMeses.map(k => k.corrTotal), cor: "#1B2A5C" },
+      { data: kpisMeses.map(k => k.corrFech), cor: "#16A34A" },
+      { data: kpisMeses.map(k => k.corrAbert), cor: "#f97316" }
+    ], true);
+    
+    desenharGraficoCanvas("evo-preventiva", labels, [
+      { data: kpisMeses.map(k => k.prevTotal), cor: "#1B2A5C" },
+      { data: kpisMeses.map(k => k.prevFech), cor: "#16A34A" },
+      { data: kpisMeses.map(k => k.prevAbert), cor: "#f97316" }
+    ], true);
+  }, 50);
+}
+
+// ============================================================
+// GRID DE CATEGORIAS
+// ============================================================
+function renderizarGridCategorias() {
+  const c = document.getElementById("conteudo");
+  const grid = document.createElement("div");
+  grid.className = "cat-grid";
+
+  const cats = agruparPor(CHAMADOS_FILTRADOS, x => x.categoria)
+    .filter(x => x.nome !== "PCM" && x.nome !== "Extras" && x.nome !== "Outros" && x.nome !== "Regionais" && x.nome !== "Subgerentes")
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+  if (cats.length === 0) {
+    c.innerHTML += `<div class="loading">Nenhuma categoria para exibir.</div>`;
+    return;
+  }
+
+  cats.forEach(cat => {
+    const cls = corTaxa(cat.taxa);
+    const card = document.createElement("div");
+    card.className = "cat-card " + cls;
+    card.innerHTML = `
+      <div class="cat-nome">${cat.nome}</div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${cat.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${cat.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${cat.abertos}</div></div>
+      </div>
+      <div class="cat-progresso"><span>Conclusão</span><span class="badge ${cls}">${cat.taxa}%</span></div>
+    `;
+    card.onclick = () => {
+      limparConteudoExcetoAbas();
+      renderizarDetalheGenerico(cat.nome, CHAMADOS_FILTRADOS.filter(x => x.categoria === cat.nome), true, false);
+    };
+    grid.appendChild(card);
+  });
+  c.appendChild(grid);
+}
+
+// ============================================================
+// LISTAS GENÉRICAS (Subgerentes, Regionais)
+// ============================================================
+function renderizarListaGenerica(titulo, dados, tipo) {
+  const conteudo = document.getElementById("conteudo");
+
+  const wrap = document.createElement("div");
+  wrap.className = "filtro-data";
+  wrap.innerHTML = `<label>Buscar:</label><input type="text" id="input-busca-lista" placeholder="Nome..."><button>Buscar</button>`;
+  conteudo.appendChild(wrap);
+
+  const inp = document.getElementById("input-busca-lista");
+  wrap.querySelector("button").onclick = () => {
+    const termo = normalizar(inp.value);
+    conteudo.querySelectorAll("table.tabela tbody tr").forEach(tr => {
+      const nomeEl = tr.querySelector("[data-nome]");
+      if (!nomeEl) return;
+      const nome = normalizar(nomeEl.dataset.nome || nomeEl.textContent);
+      tr.style.display = (!termo || nome.includes(termo)) ? "" : "none";
+    });
+  };
+
+  const divTitulo = document.createElement("div");
+  divTitulo.className = "section-title";
+  divTitulo.innerHTML = `<span>${titulo}</span><span class="tag">Ranking por Taxa</span>`;
+  conteudo.appendChild(divTitulo);
+
+  const ordenados = dados.slice().sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead><tr><th>Rank</th><th>Nome</th><th class="num">Total (Corr+Prev)</th><th class="num">Fechados</th><th class="num">Abertos</th><th class="taxa">Taxa</th></tr></thead>
+    <tbody>
+      ${ordenados.map((d, i) => {
+        const cls = i === 0 ? "ouro" : i === 1 ? "prata" : i === 2 ? "bronze" : "";
+        return `<tr>
+          <td class="rank ${cls}">${medalha(i + 1)}</td>
+          <td><span class="nome-clicavel" data-nome="${d.nome}" data-tipo="${tipo}">${d.nome}</span></td>
+          <td class="num">${d.total}</td><td class="num">${d.fechados}</td><td class="num">${d.abertos}</td>
+          <td class="taxa"><span class="${corTaxa(d.taxa)}">${d.taxa}%</span></td>
+        </tr>`;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  conteudo.querySelectorAll("[data-nome]").forEach(el => {
+    el.onclick = () => {
+      limparConteudoExcetoAbas();
+      if (tipo === "subg") {
+        const subNome = el.dataset.nome;
+        // Filtra os chamados ESTRITAMENTE pelas lojas daquele subgerente
+        const lojasDaRegiao = SUBGERENTES[subNome].lojas.map(l => normalizarLoja(l));
+        const filtradosDaRegiao = CHAMADOS_FILTRADOS.filter(c => lojasDaRegiao.includes(c.lojaNorm));
+        
+        renderizarDetalheGenerico(subNome, filtradosDaRegiao, true, true);
+        
+      } else if (tipo === "prest") {
+        renderizarDetalheGenerico(el.dataset.nome, CHAMADOS_FILTRADOS.filter(c => normalizar(c.atendente) === normalizar(el.dataset.nome)), true, false);
+      }
+    };
+  });
+}
+
+// ============================================================
+// DETALHE GENÉRICO (Com Gráficos e Separação Equipe/Extra)
+// ============================================================
+function renderizarDetalheGenerico(titulo, filt, isGroup, isSubg = false) {
+  const conteudo = document.getElementById("conteudo");
+
+  const btn = document.createElement("button");
+  btn.className = "btn-voltar";
+  btn.textContent = "← Voltar";
+  btn.onclick = () => { trocarAba(ULTIMA_ABA_LISTA); };
+  conteudo.appendChild(btn);
+
+  const divTitulo = document.createElement("div");
+  divTitulo.className = "detalhe-titulo";
+  divTitulo.textContent = titulo;
+  conteudo.appendChild(divTitulo);
+
+  const fPrev = filt.filter(c => c.tipo === "preventiva");
+  const fCorr = filt.filter(c => c.tipo === "corretiva");
+  const t = filt.length;
+  const f = filt.filter(c => c.statusCls === "fechado").length;
+  const a = t - f;
+  const tx = calcularTaxa(t, f);
+  const pFech = fPrev.filter(c => c.statusCls === "fechado").length;
+  const pAbert = fPrev.filter(c => c.statusCls === "aberto").length;
+  const cFech = fCorr.filter(c => c.statusCls === "fechado").length;
+  const cAbert = fCorr.filter(c => c.statusCls === "aberto").length;
+
+  const divPaineis = document.createElement("div");
+  const paineis = [
+    { cls: "geral", titulo: "GERAL", total: t, fechados: f, abertos: a, taxa: tx },
+    { cls: "corretiva", titulo: "CORRETIVAS", total: fCorr.length, fechados: cFech, abertos: cAbert, taxa: calcularTaxa(fCorr.length, cFech) },
+    { cls: "preventiva", titulo: "PREVENTIVAS", total: fPrev.length, fechados: pFech, abertos: pAbert, taxa: calcularTaxa(fPrev.length, pFech) }
+  ];
+
+  paineis.forEach(p => {
+    const bloco = document.createElement("div");
+    bloco.className = "painel-bloco";
+    bloco.innerHTML = `<div class="painel-titulo ${p.cls}">${p.titulo}</div>
+      <div class="kpi-grid">
+        <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${p.total}</div></div>
+        <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${p.fechados}</div></div>
+        <div class="kpi-card laranja"><div class="kpi-label">Em Atendimento</div><div class="kpi-valor">${p.abertos}</div></div>
+        <div class="kpi-card ${corTaxa(p.taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${p.taxa}%</div></div>
+      </div>`;
+    divPaineis.appendChild(bloco);
+  });
+  conteudo.appendChild(divPaineis);
+
+  const divGraficos = document.createElement("div");
+  divGraficos.className = "graficos-wrap";
+  const idBase = "detalhe";
+  divGraficos.innerHTML = `
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO GERAL</div><div class="canvas-container"><canvas id="${idBase}-geral"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO CORRETIVAS</div><div class="canvas-container"><canvas id="${idBase}-corretiva"></canvas></div></div>
+    <div class="grafico-card"><div class="grafico-titulo">GRÁFICO PREVENTIVAS</div><div class="canvas-container"><canvas id="${idBase}-preventiva"></canvas></div></div>
+  `;
+  conteudo.appendChild(divGraficos);
+
+  setTimeout(() => {
+    desenharGraficos(idBase, t, f, a, fCorr.length, cFech, cAbert, fPrev.length, pFech, pAbert);
+  }, 50);
+
+  // ============================================================
+  // PAINEL: ANÁLISE DE LOJAS DO PRESTADOR ESPECÍFICO
+  // ============================================================
+  if (filt.length > 0) {
+    const porLoja = new Map();
+    filt.forEach(c => {
+      if (!porLoja.has(c.lojaNorm)) porLoja.set(c.lojaNorm, { total: 0, abertos: 0, fechados: 0 });
+      const g = porLoja.get(c.lojaNorm);
+      g.total++;
+      if (c.statusCls === "aberto") g.abertos++;
+      else g.fechados++;
+    });
+
+    const lojasArray = Array.from(porLoja.entries()).map(([loja, d]) => ({ loja, ...d }));
+
+    const topMaisAtende = lojasArray.slice().sort((a, b) => b.total - a.total).slice(0, 5);
+    const topMaisAbertos = lojasArray.slice().filter(l => l.abertos > 0).sort((a, b) => b.abertos - a.abertos).slice(0, 5);
+    const topMenosAtende = lojasArray.slice().sort((a, b) => a.total - b.total).slice(0, 5);
+    const topMenosAbertos = lojasArray.slice().filter(l => l.abertos > 0).sort((a, b) => a.abertos - b.abertos).slice(0, 5);
+
+    const wrapLojas = document.createElement("div");
+    wrapLojas.style.marginTop = "20px";
+
+    const criarBlocoLojas = (tituloBloco, lista, tipoIndicador) => {
+      if (lista.length === 0) return;
+      
+      const bloco = document.createElement("div");
+      bloco.className = "bloco-lojas";
+      
+      const titulo = document.createElement("div");
+      titulo.className = "bloco-titulo";
+      titulo.textContent = tituloBloco;
+      bloco.appendChild(titulo);
+
+      lista.forEach(l => {
+        const span = document.createElement("span");
+        span.className = "loja-tag" + (tipoIndicador === "aberto" ? " aberto" : "");
+        
+        if (tipoIndicador === "aberto") {
+          span.textContent = "Loja " + l.loja + " • " + l.abertos + " em aberto";
+        } else {
+          span.textContent = "Loja " + l.loja + " • " + l.total + " chamados";
+        }
+        
+        bloco.appendChild(span);
+      });
+
+      wrapLojas.appendChild(bloco);
+    };
+
+    const divTituloLojas = document.createElement("div");
+    divTituloLojas.className = "section-title";
+    divTituloLojas.innerHTML = `<span>Análise de Lojas (Prestador)</span><span class="tag">Volume & Pendências</span>`;
+    conteudo.appendChild(divTituloLojas);
+
+    criarBlocoLojas("Lojas que mais atende", topMaisAtende, "total");
+    criarBlocoLojas("Lojas com mais chamados em aberto", topMaisAbertos, "aberto");
+    criarBlocoLojas("Lojas que menos atende", topMenosAtende, "total");
+    criarBlocoLojas("Lojas com menos chamados em aberto", topMenosAbertos, "aberto");
+
+    conteudo.appendChild(wrapLojas);
+  }
+
+  if (isGroup) {
+    let prestadoresEquipe = [];
+    let prestadoresExtras = [];
+
+    if (isSubg) {
+      const CATEGORIAS_FIXAS = [
+        "Refrigeração", "Climatização", "Elétrica", "Predial", "Jardim", "Geradores", "Telhados"
+      ];
+
+      const regionalOficial = SUBGERENTES[titulo] ? SUBGERENTES[titulo].regional : "";
+      const todosRegionais = ATENDENTES_REGIONAIS.map(n => normalizar(n));
+
+      const regionalFormatado = ATENDENTES_REGIONAIS.find(n => normalizar(n).includes(normalizar(regionalOficial)));
+      if (regionalFormatado) {
+        const chamadosDoRegionalNaRegiao = filt.filter(c => normalizar(c.atendente) === normalizar(regionalFormatado));
+        const total = chamadosDoRegionalNaRegiao.length;
+        const fechados = chamadosDoRegionalNaRegiao.filter(x => x.statusCls === "fechado").length;
+        
+        prestadoresEquipe.push({ 
+          nome: regionalFormatado, 
+          total, 
+          fechados, 
+          abertos: total - fechados, 
+          taxa: calcularTaxa(total, fechados) 
+        });
+      }
+
+      const statsPrestador = new Map();
+
+      filt.forEach(c => {
+        if (!statsPrestador.has(c.atendente)) {
+          statsPrestador.set(c.atendente, { totalRegiao: 0, listaRegiao: [] });
+        }
+        const stat = statsPrestador.get(c.atendente);
+        stat.totalRegiao++;
+        stat.listaRegiao.push(c);
+      });
+
+      statsPrestador.forEach((stat, atendente) => {
+        const classif = classificarAtendente(atendente);
+        
+        if (classif.pcm || classif.extra) return;
+        if (ehSubgerenteAtendente(atendente)) return;
+
+        const isRegional = todosRegionais.includes(normalizar(atendente));
+        const isRegionalOficial = normalizar(atendente).includes(normalizar(regionalOficial));
+        
+        if (isRegional && !isRegionalOficial) return;
+        if (isRegionalOficial) return;
+
+        const chamadosRegiao = stat.listaRegiao;
+        const total = chamadosRegiao.length;
+        const fechados = chamadosRegiao.filter(x => x.statusCls === "fechado").length;
+        const item = { nome: atendente, total, fechados, abertos: total - fechados, taxa: calcularTaxa(total, fechados) };
+
+        if (CATEGORIAS_FIXAS.includes(classif.cat) && total >= 5) {
+          prestadoresEquipe.push(item);
+        } else {
+          prestadoresExtras.push(item);
+        }
+      });
+
+    } else {
+      prestadoresEquipe = agruparPor(filt, c => c.atendente).sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+    }
+
+    prestadoresEquipe.sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+    prestadoresExtras.sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+    const criarTabela = (tituloTabela, lista) => {
+      if (lista.length === 0) return null;
+      
+      const div = document.createElement("div");
+      div.style.marginTop = "20px";
+      
+      const titulo = document.createElement("div");
+      titulo.className = "section-title";
+      titulo.innerHTML = `<span>${tituloTabela}</span>`;
+      div.appendChild(titulo);
+
+      const tabela = document.createElement("table");
+      tabela.className = "tabela";
+      tabela.style.marginBottom = "0";
+      tabela.innerHTML = `
+        <thead><tr><th>Rank</th><th>Prestador</th><th>Categoria</th><th class="num">Total na Região</th><th class="num">Fechados</th><th class="num">Abertos</th><th class="taxa">Taxa</th></tr></thead>
+        <tbody>
+          ${lista.map((p, i) => {
+            const cls = i === 0 ? "ouro" : i === 1 ? "prata" : i === 2 ? "bronze" : "";
+            return `<tr>
+              <td class="rank ${cls}">${medalha(i + 1)}</td>
+              <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+              <td>${classificarAtendente(p.nome).cat}</td>
+              <td class="num">${p.total}</td><td class="num">${p.fechados}</td><td class="num">${p.abertos}</td>
+              <td class="taxa"><span class="${corTaxa(p.taxa)}">${p.taxa}%</span></td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      `;
+      div.appendChild(tabela);
+      return div;
+    };
+
+    const tblEquipe = criarTabela(isSubg ? "Equipe Fixa (Regionais + 5+ chamados)" : "Prestadores", prestadoresEquipe);
+    if (tblEquipe) conteudo.appendChild(tblEquipe);
+
+    if (isSubg && prestadoresExtras.length > 0) {
+      const tblExtras = criarTabela("Extras / Apoio", prestadoresExtras);
+      if (tblExtras) conteudo.appendChild(tblExtras);
+    }
+
+    conteudo.querySelectorAll("[data-prest]").forEach(el => {
+      el.onclick = () => {
+        limparConteudoExcetoAbas();
+        renderizarDetalheGenerico(el.dataset.prest, CHAMADOS_FILTRADOS.filter(c => normalizar(c.atendente) === normalizar(el.dataset.prest)), false, false);
+      };
+    });
+  }
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  carregarDados();
+});
+</script>
+</body>
+</html>
